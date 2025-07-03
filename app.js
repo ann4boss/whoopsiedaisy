@@ -119,19 +119,29 @@ app.get("/recovery", async (req, res) => {
   }
 });
 
+// Set time frame
+// Example: last 7 days
+const now = new Date();
+const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+const formatDate = (d) => d.toISOString().split('T')[0]; // YYYY-MM-DD
+
 // Sleep
 app.get("/sleep", async (req, res) => {
   if (!req.user) return res.redirect("/");
 
   try {
-    const response = await fetch(
-      "https://api.prod.whoop.com/developer/v1/sleep",
-      {
-        headers: {
-          Authorization: `Bearer ${req.user.accessToken}`,
-        },
-      }
-    );
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const formatDate = (d) => d.toISOString().split("T")[0]; // YYYY-MM-DD
+
+    const url = `https://api.prod.whoop.com/developer/v1/sleep?start=${formatDate(sevenDaysAgo)}&end=${formatDate(now)}`;
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${req.user.accessToken}`,
+      },
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
