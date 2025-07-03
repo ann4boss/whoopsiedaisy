@@ -106,18 +106,70 @@ app.get("/recovery", async (req, res) => {
       return res.status(response.status).send(`WHOOP API error: ${errorText}`);
     }
 
-    const recoveryData = await response.json();
+    const { records } = await response.json();
 
+    // Extract date and score for each record
+    const dataPoints = records.map((r) => ({
+      date: r.created_at.split("T")[0],
+      score: r.score.recovery_score,
+    }));
+
+    // Render as HTML with embedded Chart.js
     res.send(`
-      <h2>Recovery Data</h2>
-      <pre>${JSON.stringify(recoveryData, null, 2)}</pre>
-      <a href="/welcome">Back</a>
+      <html>
+        <head>
+          <title>Recovery Graph</title>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        </head>
+        <body>
+          <h2>Recovery Score Over Time</h2>
+          <canvas id="recoveryChart" width="800" height="400"></canvas>
+          <a href="/welcome">Back</a>
+
+          <script>
+            const ctx = document.getElementById('recoveryChart').getContext('2d');
+            const chart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: ${JSON.stringify(dataPoints.map(p => p.date))},
+                datasets: [{
+                  label: 'Recovery Score',
+                  data: ${JSON.stringify(dataPoints.map(p => p.score))},
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  borderWidth: 2,
+                  fill: true,
+                  tension: 0.2
+                }]
+              },
+              options: {
+                scales: {
+                  y: {
+                    beginAtZero: false,
+                    title: {
+                      display: true,
+                      text: 'Score'
+                    }
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Date'
+                    }
+                  }
+                }
+              }
+            });
+          </script>
+        </body>
+      </html>
     `);
   } catch (error) {
     console.error("Error fetching recovery data:", error);
     res.status(500).send("Error fetching recovery data");
   }
 });
+
 
 
 // Sleep
