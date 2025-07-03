@@ -15,7 +15,7 @@ const whoopOAuthConfig = {
   clientSecret: process.env.CLIENT_SECRET,
   callbackURL: process.env.CALLBACK_URL,
   state: true,
-  scope: ["offline", "read:sleep", "read:recovery", "read:body_measurement"]
+  scope: ["offline", "read:sleep", "read:recovery", "read:cycles"]
 };
 
 // What to do after successful login
@@ -72,7 +72,7 @@ app.get("/welcome", (req, res) => {
     <pre>Refresh Token: ${req.user.refreshToken}</pre>
     <a href="/recovery">View Recovery Data</a><br>
     <a href="/sleep">View Sleep Data</a><br>
-    <a href="/body_measurement">View Body Measurement Data</a><br>
+    <a href="/cycles">View Cyclest Data</a><br>
     <a href="/logout">Logout</a>
   `);
 });
@@ -155,13 +155,13 @@ app.get("/sleep", async (req, res) => {
   }
 });
 
-// Body measurment
-app.get("/body_measurement", async (req, res) => {
+// Cycles
+app.get("/cycles", async (req, res) => {
   if (!req.user) return res.redirect("/");
 
   try {
     const response = await fetch(
-      "https://api.prod.whoop.com/developer/v1/user/measurement/body",
+      "https://api.prod.whoop.com/developer/v1/cycle",
       {
         headers: {
           Authorization: `Bearer ${req.user.accessToken}`,
@@ -174,11 +174,11 @@ app.get("/body_measurement", async (req, res) => {
       return res.status(response.status).send(`WHOOP API error: ${errorText}`);
     }
 
-    const bodyMeasurementData = await response.json();
+    const cyclesData = await response.json();
 
     res.send(`
-      <h2>Body Measurement Data</h2>
-      <pre>${JSON.stringify(bodyMeasurementData, null, 2)}</pre>
+      <h2>Cycles Data</h2>
+      <pre>${JSON.stringify(cyclesData, null, 2)}</pre>
       <a href="/welcome">Back</a>
     `);
   } catch (error) {
