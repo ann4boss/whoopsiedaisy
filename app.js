@@ -36,15 +36,25 @@ const getUser = async (accessToken, refreshToken, results, profile, done) => {
 const fetchProfile = async (accessToken, done) => {
   try {
     const res = await fetch(
-      `${process.env.WHOOP_API_HOSTNAME}/developer/v1/user/profile/basic`,
+      "https://api.prod.whoop.com/developer/v1/user/profile/basic",
       {
-        headers: { Authorization: `Bearer ${accessToken}` }
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
+
+    if (!res.ok) {
+      // If response status not 2xx, throw error with status and message
+      const text = await res.text();
+      throw new Error(`WHOOP API error: ${res.status} ${res.statusText} - ${text}`);
+    }
+
     const profile = await res.json();
     done(null, profile);
-  } catch (err) {
-    done(err);
+  } catch (error) {
+    console.error("Error fetching WHOOP profile:", error);
+    done(error);
   }
 };
 
