@@ -61,7 +61,7 @@ app.get("/auth/whoop/callback",
     res.redirect("/welcome");
   }
 );
-
+// wWlcome page
 app.get("/welcome", (req, res) => {
   if (!req.user) return res.redirect("/");
 
@@ -87,6 +87,7 @@ app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");
 });
 
+// Recovery
 app.get("/recovery", async (req, res) => {
   if (!req.user) return res.redirect("/");
 
@@ -118,6 +119,7 @@ app.get("/recovery", async (req, res) => {
   }
 });
 
+// Sleep
 app.get("/sleep", async (req, res) => {
   if (!req.user) return res.redirect("/");
 
@@ -149,6 +151,7 @@ app.get("/sleep", async (req, res) => {
   }
 });
 
+// Body measurment
 app.get("/body_measurement", async (req, res) => {
   if (!req.user) return res.redirect("/");
 
