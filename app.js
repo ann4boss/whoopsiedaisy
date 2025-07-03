@@ -18,52 +18,26 @@ const whoopOAuthConfig = {
   scope: ["offline", "read:sleep", "read:recovery", "read:body_measurement"]
 };
 
-// Step 1: What to do after successful login
+// What to do after successful login
 const getUser = async (accessToken, refreshToken, results, profile, done) => {
   const { expires_in } = results;
 
+  // No profile fetch since read:profile is disallowed
   const user = {
     accessToken,
     refreshToken,
     expiresAt: Date.now() + expires_in * 1000,
-    profile
+    scopes: results.scope, // you can store granted scopes here
   };
 
   return done(null, user);
 };
 
-// Step 2: How to get user profile from WHOOP
-const fetchProfile = async (accessToken, done) => {
-  try {
-    const res = await fetch(
-      "https://api.prod.whoop.com/developer/v1/user/profile/basic",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
 
-    if (!res.ok) {
-      // If response status not 2xx, throw error with status and message
-      const text = await res.text();
-      throw new Error(`WHOOP API error: ${res.status} ${res.statusText} - ${text}`);
-    }
-
-    const profile = await res.json();
-    done(null, profile);
-  } catch (error) {
-    console.error("Error fetching WHOOP profile:", error);
-    done(error);
-  }
-};
-
-// Configure Passport strategy
 const strategy = new OAuth2Strategy(whoopOAuthConfig, getUser);
-strategy.userProfile = fetchProfile;
 passport.use("withWhoop", strategy);
 
-// Set up Express session and Passport
+// Setup Express session and Passport
 app.use(session({ secret: "keyboard cat", resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -82,7 +56,7 @@ app.get("/", (req, res) => {
 app.get("/auth/whoop", passport.authenticate("withWhoop"));
 
 app.get("/auth/whoop/callback",
-  passport.authenticate("withWhoop", { failureRedirect: "/login" }),
+  passport.authenticate("withWhoop", { failureRedirect: "/" }),
   (req, res) => {
     res.redirect("/welcome");
   }
@@ -92,8 +66,10 @@ app.get("/welcome", (req, res) => {
   if (!req.user) return res.redirect("/");
 
   res.send(`
-    <h2>Welcome, ${req.user.profile.first_name || "user"}!</h2>
-    <pre>${JSON.stringify(req.user, null, 2)}</pre>
+    <h2>Welcome!</h2>
+    <p>Your authorized scopes: ${req.user.scopes}</p>
+    <pre>Access Token: ${req.user.accessToken}</pre>
+    <pre>Refresh Token: ${req.user.refreshToken}</pre>
     <a href="/logout">Logout</a>
   `);
 });
