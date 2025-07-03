@@ -83,3 +83,106 @@ app.get("/logout", (req, res) => {
 app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");
 });
+
+app.get("/recovery", async (req, res) => {
+  if (!req.user) return res.redirect("/");
+
+  try {
+    const response = await fetch(
+      "https://api.prod.whoop.com/developer/v1/recovery",
+      {
+        headers: {
+          Authorization: `Bearer ${req.user.accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).send(`WHOOP API error: ${errorText}`);
+    }
+
+    const recoveryData = await response.json();
+
+    res.send(`
+      <h2>Recovery Data</h2>
+      <pre>${JSON.stringify(recoveryData, null, 2)}</pre>
+      <a href="/welcome">Back</a>
+    `);
+  } catch (error) {
+    console.error("Error fetching recovery data:", error);
+    res.status(500).send("Error fetching recovery data");
+  }
+});
+
+app.get("/sleep", async (req, res) => {
+  if (!req.user) return res.redirect("/");
+
+  try {
+    const response = await fetch(
+      "https://api.prod.whoop.com/developer/v1/sleep",
+      {
+        headers: {
+          Authorization: `Bearer ${req.user.accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).send(`WHOOP API error: ${errorText}`);
+    }
+
+    const sleepData = await response.json();
+
+    res.send(`
+      <h2>Sleep Data</h2>
+      <pre>${JSON.stringify(sleepData, null, 2)}</pre>
+      <a href="/welcome">Back</a>
+    `);
+  } catch (error) {
+    console.error("Error fetching sleep data:", error);
+    res.status(500).send("Error fetching sleep data");
+  }
+});
+
+app.get("/body_measurement", async (req, res) => {
+  if (!req.user) return res.redirect("/");
+
+  try {
+    const response = await fetch(
+      "https://api.prod.whoop.com/developer/v1/body_measurement",
+      {
+        headers: {
+          Authorization: `Bearer ${req.user.accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return res.status(response.status).send(`WHOOP API error: ${errorText}`);
+    }
+
+    const bodyMeasurementData = await response.json();
+
+    res.send(`
+      <h2>Body Measurement Data</h2>
+      <pre>${JSON.stringify(bodyMeasurementData, null, 2)}</pre>
+      <a href="/welcome">Back</a>
+    `);
+  } catch (error) {
+    console.error("Error fetching body measurement data:", error);
+    res.status(500).send("Error fetching body measurement data");
+  }
+});
+
+app.get("/logout", (req, res) => {
+  req.logout(() => {
+    res.redirect("/");
+  });
+});
+
+app.listen(3000, () => {
+  console.log("Server running at http://localhost:3000");
+});
