@@ -70,6 +70,9 @@ app.get("/welcome", (req, res) => {
     <p>Your authorized scopes: ${req.user.scopes}</p>
     <pre>Access Token: ${req.user.accessToken}</pre>
     <pre>Refresh Token: ${req.user.refreshToken}</pre>
+    <a href="/recovery">View Recovery Data</a><br>
+    <a href="/sleep">View Sleep Data</a><br>
+    <a href="/body_measurement">View Body Measurement Data</a><br>
     <a href="/logout">Logout</a>
   `);
 });
